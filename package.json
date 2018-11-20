@@ -1,0 +1,11 @@
+{
+    "name": "Shobre-Bot",
+    "version": "1.0.0",
+    "description": "First bot ever",
+    "main": "bot.js",
+    "author": "Shobre",
+    "dependencies": {
+        "discord.io": "https://github.com/woor/discord.io/tarball/gateway_v6",
+        "winston": "^3.1.0"
+    }
+}
