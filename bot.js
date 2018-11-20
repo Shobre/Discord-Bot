@@ -18,8 +18,8 @@ bot.on('ready', function (evt) {
     logger.info(bot.username + ' - (' + bot.id + ')');
 });
 
-sps = (cmd) => {
-    var choice = ['stone', 'paper', 'scissor']
+rps = (cmd) => {
+    var choice = ['rock', 'paper', 'scissor']
     var rand = choice[Math.floor(Math.random() * choice.length)];
     var answer = [rand, cmd]
 
@@ -37,13 +37,14 @@ sps = (cmd) => {
     };
 }
 
+var gameSession = []
 bot.on('message', function (user, userID, channelID, message, evt) {
+    var findSession = gameSession.find(user => user.userID === userID)
     // Our bot needs to know if it will execute a command
     // It will listen for messages that will start with `!`
     if (message.substring(0, 1) == '!') {
         var args = message.substring(1).split(' ');
         var cmd = args[0];
-
         args = args.splice(1);
         switch (cmd) {
             // !ping
@@ -62,39 +63,100 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                     to: channelID,
                     message: 'You rolled ' + Math.floor((Math.random() * 100) + 1)
                 });
-            case 'paper':
-            case 'scissor':
-            case 'stone':
-                var answer = sps(cmd);
-                switch (answer[2]) {
-                    case "tied":
-                        bot.sendMessage({
-                            to: channelID,
-                            message: answer[0] + "\nTied, try again " + user
-                        });
-                        break;
-                    case "win":
-                        bot.sendMessage({
-                            to: channelID,
-                            message:
-                                answer[0] + "\nYou win " + user
-                        });
-                        break;
-                    case "lose":
-                        bot.sendMessage({
-                            to: channelID,
-                            message:
-                                answer[0] +
-                                "\nYou lose " +
-                                user
-                        });
-                        break;
-                    default:
-                        break;
+            case 'play':
+                if (gameSession.find(user => user.userID)) {
+                    bot.sendMessage({
+                        to: channelID,
+                        message: "My score: " + findSession.botScore + "\n" +
+                            user + " score: " + findSession.playerScore
+                    })
+                }
+                else {
+                    gameSession.push({ userID: userID, botScore: 0, playerScore: 0 })
+                    bot.sendMessage({
+                        to: channelID,
+                        message: "Hey " + user + "!\n" + "Let's play rock paper scissors!\n" + " First to 3 wins wins the game." + "\nStarting new session..."
+                    });
                 }
                 break;
+            case 'paper':
+            case 'scissor':
+            case 'rock':
+                if (gameSession.find(user => user.userID === userID)) {
+                    var answer = rps(cmd);
+                    console.log(gameSession.find(user => user.userID));
+                    switch (answer[2]) {
+                        case "tied":
+                            bot.sendMessage({
+                                to: channelID,
+                                message: answer[0] + "\nTied, try again " + user + "\nMy score: " + findSession.botScore + "\n" + user + " score: " + findSession.playerScore
+                            });
+                            break;
+                        case "win":
+                            findSession.playerScore = (findSession.playerScore + 1)
+                            if(findSession.playerScore >= 3) {
+                                bot.sendMessage({
+                                    to: channelID,
+                                    message:
+                                        answer[0] + "\nYou won the game " + user + "!!!\n\nMy score: " + findSession.botScore + "\n" + user + " score: " + findSession.playerScore
+                                });
+                                gameSession = removeA(gameSession, userID);
+                            } else {
+                            bot.sendMessage({
+                                to: channelID,
+                                message:
+                                    answer[0] + "\nYou win " + user + "\nMy score: " + findSession.botScore + "\n" + user + " score: " + findSession.playerScore
+                            });}
+                            break;
+                        case "lose":
+                            findSession.botScore = (findSession.botScore + 1)
+                            if (findSession.botScore >= 3) {
+                                bot.sendMessage({
+                                    to: channelID,
+                                    message:
+                                        answer[0] + "\nYou lost the game " + user + "!!!\n\nMy score: " + findSession.botScore + "\n" + user + " score: " + findSession.playerScore
+                                });
+                                gameSession = removeA(gameSession, userID);
+                            } else {
+                            bot.sendMessage({
+                                to: channelID,
+                                message:
+                                    answer[0] +
+                                    "\nYou lose " +
+                                    user + "\nMy score: " + findSession.botScore + "\n" + user + " score: " + findSession.playerScore
+                            });}
+                            break;
+                        default:
+                            break;
+                    }
+                } else {
+                    bot.sendMessage({
+                        to: channelID,
+                        message: "You haven't started a session.\nTo start a game session type !play"
+                    })
+                }
+                break;
+            case "test":
+                bot.sendMessage({
+                    to: userID,
+                    message: "Is this what you're looking for?\n" + JSON.stringify(gameSession)
+                })
 
+                break;
+            default:
+                break;
             // Just add any case commands if you want to..
         }
     }
+    function removeA(arr, arguments) {
+        var what, a = arguments, L = a.length, ax;
+        while (L > 1 && arr.length) {
+            what = a[--L];
+            while ((ax = arr.indexOf(what)) !== -1) {
+                arr.splice(ax, 1);
+            }
+        }
+        return arr;
+    }
+
 });
