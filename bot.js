@@ -1,6 +1,6 @@
 var Discord = require('discord.io');
 var logger = require('winston');
-var auth = require('./auth.json');
+require('dotenv').config();
 // Configure logger settings
 logger.remove(logger.transports.Console);
 logger.add(new logger.transports.Console, {
@@ -9,7 +9,7 @@ logger.add(new logger.transports.Console, {
 logger.level = 'debug';
 // Initialize Discord Bot
 var bot = new Discord.Client({
-    token: auth.token,
+    token: process.env.BOT_TOKEN,
     autorun: true
 });
 bot.on('ready', function (evt) {
@@ -63,7 +63,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                     to: channelID,
                     message: 'You rolled ' + Math.floor((Math.random() * 100) + 1)
                 });
-            case 'play':
+            case 'game':
                 if (gameSession.find(user => user.userID)) {
                     bot.sendMessage({
                         to: channelID,
@@ -75,7 +75,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                     gameSession.push({ userID: userID, botScore: 0, playerScore: 0 })
                     bot.sendMessage({
                         to: channelID,
-                        message: "Hey " + user + "!\n" + "Let's play rock paper scissors!\n" + " First to 3 wins wins the game." + "\nStarting new session..."
+                        message: "Hey " + user + "!\n" + "Let's play rock paper scissors!\n" + " Best of Five." + "\nStarting new session..."
                     });
                 }
                 break;
