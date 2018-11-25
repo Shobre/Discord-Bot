@@ -13,14 +13,15 @@ var bot = new Discord.Client({
     token: process.env.BOT_TOKEN,
     autorun: true
 });
-bot.on('ready', function (evt) {
+bot.on('ready', function (channelID, evt) {
+    console.log(channelID);
     logger.info('Connected');
     logger.info('Logged in as: ');
     logger.info(bot.username + ' - (' + bot.id + ')');
-    bot.sendMessage({
-        to: process.env.TEST_CHANNEL,
-        message: 'Hello humans, I am ready to serve!\nTo find out what I can do type "!help".'
-    })
+    // bot.sendMessage({
+    //     to: process.env.TEST_CHANNEL,
+    //     message: 'Hello humans, I am ready to serve!\nTo find out what I can do type "!help".'
+    // })
 });
 
 rps = (cmd) => {
