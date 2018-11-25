@@ -1,6 +1,7 @@
 var Discord = require('discord.io');
 var logger = require('winston');
-var auth = require('./auth.json');
+var axios = require('axios');
+require('dotenv').config();
 // Configure logger settings
 logger.remove(logger.transports.Console);
 logger.add(new logger.transports.Console, {
@@ -9,13 +10,17 @@ logger.add(new logger.transports.Console, {
 logger.level = 'debug';
 // Initialize Discord Bot
 var bot = new Discord.Client({
-    token: auth.token,
+    token: process.env.BOT_TOKEN,
     autorun: true
 });
 bot.on('ready', function (evt) {
     logger.info('Connected');
     logger.info('Logged in as: ');
     logger.info(bot.username + ' - (' + bot.id + ')');
+    bot.sendMessage({
+        to: process.env.TEST_CHANNEL,
+        message: 'Hello humans, I am ready to serve!\nTo find out what I can do type "!help".'
+    })
 });
 
 rps = (cmd) => {
@@ -66,7 +71,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                     message: 'You rolled ' + Math.floor((Math.random() * 100) + 1)
                 });
                 break;
-            case 'play':
+            case 'game':
                 if (gameSession.find(user => user.userID)) {
                     bot.sendMessage({
                         to: channelID,
@@ -78,7 +83,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                     gameSession.push({ userID: userID, botScore: 0, playerScore: 0 })
                     bot.sendMessage({
                         to: channelID,
-                        message: "Hey " + user + "!\n" + "Let's play rock paper scissors!\n" + " First to 3 wins wins the game." + "\nStarting new session..."
+                        message: "Hey " + user + "!\n" + "Let's play rock paper scissors!\n" + " Best of Five." + "\nStarting new session..."
                     });
                 }
                 break;
@@ -141,27 +146,58 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                     })
                 }
                 break;
+            case "translate":
+                bot.sendMessage({
+                    to: channelID,
+                    message: "What do you want to translate?"
+                })
+                bot.on('message', (user, userID, channelID, message, evt) => {
+                    try {
+                        axios.get('https://translate.yandex.net/api/v1.5/tr.json/translate', {
+                            params: {
+                                key: process.env.YANDEX_API_KEY,
+                                text: message,
+                                lang: 'en'
+                            }
+                        }).then(res => {
+                            console.log(res)
+                            if (res.data.text[0] !== message) {
+                                bot.sendMessage({
+                                    to: channelID,
+                                    message: res.data.text[0]
+                                })
+                            }
+                        })
+                    } catch (error) {
+                        console.log(error)
+                        bot.sendMessage({
+                            to: channelID,
+                            message: "Couldn't translate that... :("
+                        })
+                    }
+                })
+                break;
             case "test":
                 bot.sendMessage({
                     to: userID,
-                    message: "Is this what you're looking for?\n" + JSON.stringify(gameSession)
+                    message: "Is this what you're looking for?\n" + message
                 })
-
+                break;
+            case "help":
+                bot.sendMessage({
+                    to: channelID,
+                    message: "These are my commands:\n\n" +
+                        "- !hello - Hello to you too.\n" +
+                        "- !roll - To roll random number between 1-100\n" +
+                        "- !ping - To recieve pong.\n" +
+                        "- !game - To play rock paper scissors.(still under development...)\n" +
+                        "- !translate - If you need translation"
+                })
                 break;
             default:
                 break;
             // Just add any case commands if you want to..
         }
-    }
-    function removeA(arr, arguments) {
-        var what, a = arguments, L = a.length, ax;
-        while (L > 1 && arr.length) {
-            what = a[--L];
-            while ((ax = arr.indexOf(what)) !== -1) {
-                arr.splice(ax, 1);
-            }
-        }
-        return arr;
     }
 
 });
