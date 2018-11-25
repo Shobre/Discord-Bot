@@ -186,11 +186,11 @@ bot.on('message', function (user, userID, channelID, message, evt) {
             case "help":
                 bot.sendMessage({
                     to: channelID,
-                    message: "These are my commands:\n" +
+                    message: "These are my commands:\n\n" +
                         "- !hello - Hello to you too.\n" +
                         "- !roll - To roll random number between 1-100\n" +
                         "- !ping - To recieve pong.\n" +
-                        "- !game - To play rock paper scissors.(still under development...)" +
+                        "- !game - To play rock paper scissors.(still under development...)\n" +
                         "- !translate - If you need translation"
                 })
                 break;
