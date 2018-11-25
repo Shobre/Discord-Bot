@@ -18,7 +18,7 @@ bot.on('ready', function (evt) {
     logger.info('Logged in as: ');
     logger.info(bot.username + ' - (' + bot.id + ')');
     bot.sendMessage({
-        to: "514196891056209924",
+        to: process.env.TEST_CHANNEL,
         message: 'Hello humans, I am ready to serve!\nTo find out what I can do type "!help".'
     })
 });
