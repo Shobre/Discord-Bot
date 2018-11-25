@@ -53,16 +53,19 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                     to: channelID,
                     message: 'Pong!'
                 });
+                break;
             case 'hello':
                 bot.sendMessage({
                     to: channelID,
                     message: 'Howdy partner!'
                 });
+                break;
             case 'roll':
                 bot.sendMessage({
                     to: channelID,
                     message: 'You rolled ' + Math.floor((Math.random() * 100) + 1)
                 });
+                break;
             case 'play':
                 if (gameSession.find(user => user.userID)) {
                     bot.sendMessage({
@@ -94,7 +97,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                             break;
                         case "win":
                             findSession.playerScore = (findSession.playerScore + 1)
-                            if(findSession.playerScore >= 3) {
+                            if (findSession.playerScore >= 3) {
                                 bot.sendMessage({
                                     to: channelID,
                                     message:
@@ -102,11 +105,12 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                                 });
                                 gameSession = removeA(gameSession, userID);
                             } else {
-                            bot.sendMessage({
-                                to: channelID,
-                                message:
-                                    answer[0] + "\nYou win " + user + "\nMy score: " + findSession.botScore + "\n" + user + " score: " + findSession.playerScore
-                            });}
+                                bot.sendMessage({
+                                    to: channelID,
+                                    message:
+                                        answer[0] + "\nYou win " + user + "\nMy score: " + findSession.botScore + "\n" + user + " score: " + findSession.playerScore
+                                });
+                            }
                             break;
                         case "lose":
                             findSession.botScore = (findSession.botScore + 1)
@@ -118,13 +122,14 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                                 });
                                 gameSession = removeA(gameSession, userID);
                             } else {
-                            bot.sendMessage({
-                                to: channelID,
-                                message:
-                                    answer[0] +
-                                    "\nYou lose " +
-                                    user + "\nMy score: " + findSession.botScore + "\n" + user + " score: " + findSession.playerScore
-                            });}
+                                bot.sendMessage({
+                                    to: channelID,
+                                    message:
+                                        answer[0] +
+                                        "\nYou lose " +
+                                        user + "\nMy score: " + findSession.botScore + "\n" + user + " score: " + findSession.playerScore
+                                });
+                            }
                             break;
                         default:
                             break;
