@@ -1,5 +1,6 @@
 var Discord = require('discord.io');
 var logger = require('winston');
+var axios = require('axios');
 require('dotenv').config();
 // Configure logger settings
 logger.remove(logger.transports.Console);
@@ -16,6 +17,10 @@ bot.on('ready', function (evt) {
     logger.info('Connected');
     logger.info('Logged in as: ');
     logger.info(bot.username + ' - (' + bot.id + ')');
+    bot.sendMessage({
+        to: "514196891056209924",
+        message: 'Hello humans, I am ready to serve!\nTo find out what I can do type "!help".'
+    })
 });
 
 rps = (cmd) => {
@@ -53,16 +58,19 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                     to: channelID,
                     message: 'Pong!'
                 });
+                break;
             case 'hello':
                 bot.sendMessage({
                     to: channelID,
                     message: 'Howdy partner!'
                 });
+                break;
             case 'roll':
                 bot.sendMessage({
                     to: channelID,
                     message: 'You rolled ' + Math.floor((Math.random() * 100) + 1)
                 });
+                break;
             case 'game':
                 if (gameSession.find(user => user.userID)) {
                     bot.sendMessage({
@@ -94,7 +102,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                             break;
                         case "win":
                             findSession.playerScore = (findSession.playerScore + 1)
-                            if(findSession.playerScore >= 3) {
+                            if (findSession.playerScore >= 3) {
                                 bot.sendMessage({
                                     to: channelID,
                                     message:
@@ -102,11 +110,12 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                                 });
                                 gameSession = removeA(gameSession, userID);
                             } else {
-                            bot.sendMessage({
-                                to: channelID,
-                                message:
-                                    answer[0] + "\nYou win " + user + "\nMy score: " + findSession.botScore + "\n" + user + " score: " + findSession.playerScore
-                            });}
+                                bot.sendMessage({
+                                    to: channelID,
+                                    message:
+                                        answer[0] + "\nYou win " + user + "\nMy score: " + findSession.botScore + "\n" + user + " score: " + findSession.playerScore
+                                });
+                            }
                             break;
                         case "lose":
                             findSession.botScore = (findSession.botScore + 1)
@@ -118,13 +127,14 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                                 });
                                 gameSession = removeA(gameSession, userID);
                             } else {
-                            bot.sendMessage({
-                                to: channelID,
-                                message:
-                                    answer[0] +
-                                    "\nYou lose " +
-                                    user + "\nMy score: " + findSession.botScore + "\n" + user + " score: " + findSession.playerScore
-                            });}
+                                bot.sendMessage({
+                                    to: channelID,
+                                    message:
+                                        answer[0] +
+                                        "\nYou lose " +
+                                        user + "\nMy score: " + findSession.botScore + "\n" + user + " score: " + findSession.playerScore
+                                });
+                            }
                             break;
                         default:
                             break;
@@ -136,27 +146,58 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                     })
                 }
                 break;
+            case "translate":
+                bot.sendMessage({
+                    to: channelID,
+                    message: "What do you want to translate?"
+                })
+                bot.on('message', (user, userID, channelID, message, evt) => {
+                    try {
+                        axios.get('https://translate.yandex.net/api/v1.5/tr.json/translate', {
+                            params: {
+                                key: process.env.YANDEX_API_KEY,
+                                text: message,
+                                lang: 'en'
+                            }
+                        }).then(res => {
+                            console.log(res)
+                            if (res.data.text[0] !== message) {
+                                bot.sendMessage({
+                                    to: channelID,
+                                    message: res.data.text[0]
+                                })
+                            }
+                        })
+                    } catch (error) {
+                        console.log(error)
+                        bot.sendMessage({
+                            to: channelID,
+                            message: "Couldn't translate that... :("
+                        })
+                    }
+                })
+                break;
             case "test":
                 bot.sendMessage({
                     to: userID,
-                    message: "Is this what you're looking for?\n" + JSON.stringify(gameSession)
+                    message: "Is this what you're looking for?\n" + message
                 })
-
+                break;
+            case "help":
+                bot.sendMessage({
+                    to: channelID,
+                    message: "These are my commands:\n" +
+                        "- !hello - Hello to you too.\n" +
+                        "- !roll - To roll random number between 1-100\n" +
+                        "- !ping - To recieve pong.\n" +
+                        "- !game - To play rock paper scissors.(still under development...)" +
+                        "- !translate - If you need translation"
+                })
                 break;
             default:
                 break;
             // Just add any case commands if you want to..
         }
-    }
-    function removeA(arr, arguments) {
-        var what, a = arguments, L = a.length, ax;
-        while (L > 1 && arr.length) {
-            what = a[--L];
-            while ((ax = arr.indexOf(what)) !== -1) {
-                arr.splice(ax, 1);
-            }
-        }
-        return arr;
     }
 
 });

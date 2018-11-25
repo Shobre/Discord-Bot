@@ -19,6 +19,7 @@
 .env.production.local
 .env
 auth.json
+.eslintrc
 
 npm-debug.log*
 yarn-debug.log*
